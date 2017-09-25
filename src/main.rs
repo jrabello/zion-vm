@@ -11,7 +11,8 @@ fn main() {
     let mut file = File::open("program.bin").expect("Unable to open the file");
     let mut program = String::new();
     file.read_to_string(&mut program).expect("Unable to read the file");
-            
+
+    //creating cpu instance, and running it        
     let mut cpu = zion::Cpu::new();
     cpu.init(&program[..]);      
 }
