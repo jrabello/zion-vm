@@ -1,0 +1,6 @@
+[package]
+name = "zion-vm"
+version = "0.1.0"
+authors = ["Joilson Rabelo <joilson.rabello@gmail.com>"]
+
+[dependencies]
