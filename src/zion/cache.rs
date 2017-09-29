@@ -14,14 +14,17 @@ impl Cache {
     }
 
     pub fn code_copy(&mut self, program_lines: &str) {
+        //copies program to cache memory(code)
         self.code[..program_lines.len()].copy_from_slice(&program_lines.as_bytes()[..]);
     }
 
     pub fn code_at(&self, idx: usize) -> &[u8] {
+        //gets a line from cache memory(code)
         &self.code[idx..]
     }
 
     pub fn data_at(&self, mem_addr: u8) -> u8 {
+        //gets data from cache memory(data)
         self.data[mem_addr as usize]
     }
 }
@@ -44,6 +47,6 @@ impl std::fmt::Debug for Cache {
             data:[ {}]",
             scode,
             sdata
-        )        
+        )
     }
 }
