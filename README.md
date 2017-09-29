@@ -19,7 +19,7 @@ move data, register or memory address to register
 
 types:
 ```
-mov R, R ;(type: 0x02)
-mov R, IMM ;(type: 0x03)
+mov R, R    ;(type: 0x02)
+mov R, IMM  ;(type: 0x03)
 mov R, @MEM ;(type: 0x04)
 ```
