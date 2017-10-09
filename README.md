@@ -8,11 +8,10 @@ zion-vm is a virtual machine made using rust-lang for the zion computer architec
 -----------------
 
 ## zion instruction set
-#### STP (0x00 0x00 0x00 0x00) (size 4)
+#### STP (0x00) (size 1)
 stops program execution, prints machine state and terminates
 
 #### MOV (0x13 0x00 0x00 0x00) (opcode type op1 op2) (size 4)
-
 move data, register or memory address to register
 
 types:

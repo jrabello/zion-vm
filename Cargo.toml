@@ -4,3 +4,5 @@ version = "0.1.0"
 authors = ["Joilson Rabelo <joilson.rabello@gmail.com>"]
 
 [dependencies]
+enum-primitive-derive = "0.1.2"
+num-traits = "0.1.40"

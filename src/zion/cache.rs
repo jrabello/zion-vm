@@ -13,17 +13,21 @@ impl Cache {
         }
     }
 
-    pub fn code_copy(&mut self, program_lines: &str) {
+    pub fn store_code(&mut self, program_lines: &str){
         //copies program to cache memory(code)
+        if program_lines.len() > 0xff {
+            panic!("your program is too bit to fit in cache(code) memory!");
+        }
         self.code[..program_lines.len()].copy_from_slice(&program_lines.as_bytes()[..]);
+    
     }
 
-    pub fn code_at(&self, idx: usize) -> &[u8] {
+    pub fn get_code_at(&self, idx: usize) -> u8 {
         //gets a line from cache memory(code)
-        &self.code[idx..]
+        self.code[idx]
     }
 
-    pub fn data_at(&self, mem_addr: u8) -> u8 {
+    pub fn get_data_at(&self, mem_addr: u8) -> u8 {
         //gets data from cache memory(data)
         self.data[mem_addr as usize]
     }
@@ -34,12 +38,14 @@ impl std::fmt::Debug for Cache {
         use std::fmt::Write;
         let mut scode = String::new();
         let mut sdata = String::new();
+
         for &byte in &self.code[..] {
             write!(&mut scode, "{:X} ", byte).expect("Unable to write");
         }
         for &byte in &self.data[..] {
             write!(&mut sdata, "{:X} ", byte).expect("Unable to write");
         }
+        
         write!(
             f,
             r"
