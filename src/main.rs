@@ -42,5 +42,5 @@ fn main() {
     );
 
     //creating cpu instance, and running it
-    zion::Cpu::new().init(&program[..]);
+    zion::Cpu::new().run(&program[..]);
 }

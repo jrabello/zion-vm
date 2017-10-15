@@ -32,6 +32,14 @@ impl Registers {
         self.ip
     }
 
+    pub fn set_value(&mut self, reg: u8, value: u8){
+        self[reg] = value;
+    }
+
+    pub fn get_value(&self, reg: u8) -> u8{
+        self[reg]
+    }
+
     fn move_rr(&mut self, reg1: u8, reg2: u8) {
         self[reg1] = self[reg2];
     }
@@ -48,7 +56,7 @@ impl Default for Registers {
             f: 0,
             ip: 0,
         }
-    }
+    }    
 }
 
 impl Index<u8> for Registers {
@@ -62,7 +70,7 @@ impl Index<u8> for Registers {
             3 => &self.d,
             4 => &self.e,
             5 => &self.f,
-            _ => panic!("unknown field: {}", idx),
+            _ => panic!("unknown register: {}", idx),
         }
     }
 }
@@ -77,7 +85,7 @@ impl IndexMut<u8> for Registers {
             3 => &mut self.d,
             4 => &mut self.e,
             5 => &mut self.f,
-            _ => panic!("unknown field: {}", idx),
+            _ => panic!("unknown register: {}", idx),
         }
     }
 }

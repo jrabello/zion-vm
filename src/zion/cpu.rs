@@ -1,16 +1,13 @@
 use std;
 use zion;
-use zion::Instruction;
-use zion::Registers;
-use zion::Flags;
-use zion::Cache;
-use zion::Io;
+use zion::{Instruction, Registers, Flags, Cache, Io};
+
 
 pub struct Cpu {
     io: Io,
     registers: Registers,
     flags: Flags,
-    cache: Cache,    
+    cache: Cache,
 }
 
 impl Cpu {
@@ -19,16 +16,16 @@ impl Cpu {
             registers: Registers::new(),
             flags: Flags::new(),
             cache: Cache::new(),
-            io: Io::new(),            
+            io: Io::new(),
         }
     }
 
-    pub fn init(&mut self, program_lines: &str) {
+    pub fn run(&mut self, program_lines: &str) {
         //copying program to cache(code)
         self.cache.store_code(program_lines);
 
         //cpu pipeline
-        loop {            
+        loop {
             let byte = self.fetch(0);
             let current_instruction = self.decode(byte);
             self.execute(current_instruction);
@@ -45,16 +42,29 @@ impl Cpu {
         //decode instruction
         let mut instr = Instruction::new(byte);
         match instr.get_id() {
-            zion::instruction::Id::Mov => {                
+            zion::instruction::Id::In => {
                 instr.set_type(self.fetch(1));
-                instr.set_arg1(self.fetch(2));
-                instr.set_arg2(self.fetch(3));
-                instr.set_size(4);
-            },
+                instr.set_op1(self.fetch(2));
+            }
+            zion::instruction::Id::Out => {
+                instr.set_type(self.fetch(1));
+                instr.set_op1(self.fetch(2));
+            }
+            zion::instruction::Id::Add => {
+                instr.set_type(self.fetch(1));
+                instr.set_op1(self.fetch(2));
+                instr.set_op2(self.fetch(3));
+            }
+            zion::instruction::Id::Mov => {
+                instr.set_type(self.fetch(1));
+                instr.set_op1(self.fetch(2));
+                instr.set_op2(self.fetch(3));
+            }
             zion::instruction::Id::Stp => {
-                instr.set_size(1);
-            },
-            _ => panic!("unkown instruction!"),
+                //println!("{:?}", self);
+                //std::process::exit(0);
+            }
+            _ => panic!("unknown instruction!"),
         }
         //update instruction pointer
         self.registers.ip_update(instr.get_size() as u8);
@@ -64,31 +74,90 @@ impl Cpu {
     fn execute(&mut self, instr: Instruction) {
         //execute instruction
         match instr.get_id() {
+            zion::instruction::Id::In => {
+                match instr.get_type() {
+                    zion::instruction::Type::R => {
+                        let reg = instr.get_op1();
+                        self.registers.set_value(reg, self.io.get_in());
+                    }
+                    zion::instruction::Type::MEM => {
+                        let mem_addr = instr.get_op1();
+                        self.cache.set_data_at(mem_addr, self.io.get_in());
+                    }
+                    _ => panic!("unknown Id::In type!"),
+                }
+            }
+            zion::instruction::Id::Out => {
+                match instr.get_type() {
+                    zion::instruction::Type::R => {
+                        let reg = instr.get_op1();
+                        self.io.set_out(self.registers.get_value(reg));
+                    }
+                    zion::instruction::Type::MEM => {
+                        let mem_addr = instr.get_op1();
+                        self.io.set_out(self.cache.get_data_at(mem_addr));
+                    }
+                    _ => panic!("unknown Id::Out type!"),
+                }
+            }
             zion::instruction::Id::Mov => {
-                //println!("{}", "mov!");
+                println!("mov :{:?} {} {}", instr.get_type(), instr.get_op1(), instr.get_op2());
                 match instr.get_type() {
                     zion::instruction::Type::R_R => {
                         //move register to register
                         //println!("type:R_R {} {}:", instr.arg1(), instr.arg2());
-                        let reg1 = instr.get_arg1();
-                        let reg2 = instr.get_arg2();
-                        self.registers[reg1] = self.registers[reg2];
+                        let reg1 = instr.get_op1();
+                        let reg2 = instr.get_op2();
+                        let reg_value = self.registers.get_value(reg2);
+                        self.registers.set_value(reg1, reg_value);
                     }
                     zion::instruction::Type::R_IMM => {
-                        //move to register IMM value
-                        //println!("type:R_IMM {} {}:", instr.arg1(), instr.arg2());
-                        let reg1 = instr.get_arg1();
-                        let data = instr.get_arg2();
-                        self.registers[reg1] = data;
+                        //move IMM value to register
+                        println!("type:R_IMM {} {}:", instr.get_op1(), instr.get_op2());
+                        let reg1 = instr.get_op1();
+                        let imm = instr.get_op2();
+                        self.registers.set_value(reg1, imm);
                     }
                     zion::instruction::Type::R_MEM => {
-                        //move to register data from cache(data)
+                        //move data from cache(data) to register
                         //println!("type:R_MEM {} {}:", instr.arg1(), instr.arg2());
-                        let reg1 = instr.get_arg1();
-                        let mem_addr = instr.get_arg2();
-                        self.registers[reg1] = self.cache.get_data_at(mem_addr);
+                        let reg1 = instr.get_op1();
+                        let mem_addr = instr.get_op2();
+                        self.registers.set_value(reg1, self.cache.get_data_at(mem_addr));
                     }
-                    _ => panic!("unknown instruction::Id::Mov type!"),
+                    zion::instruction::Type::MEM_R => {
+                        let mem_addr = instr.get_op1();
+                        let reg = instr.get_op2();
+                        self.cache.set_data_at(
+                            mem_addr,
+                            self.registers.get_value(reg),
+                        );
+                    }
+                    _ => panic!("unknown Id::Mov type!"),
+                }
+            }
+            zion::instruction::Id::Add => {
+                match instr.get_type() {
+                    zion::instruction::Type::R_R => {
+                        let reg1 = instr.get_op1();
+                        let reg1_value = self.registers.get_value(reg1);
+                        let reg2_value = self.registers.get_value(instr.get_op2());
+                        self.registers.set_value(reg1, reg1_value + reg2_value);
+                    }
+                    zion::instruction::Type::R_IMM => {
+                        let reg = instr.get_op1();
+                        let imm = instr.get_op2();
+                        let value = self.registers.get_value(reg);
+                        self.registers.set_value(reg, value + imm);
+                    }
+                    zion::instruction::Type::R_MEM => {
+                        let reg = instr.get_op1();
+                        let reg_value = self.registers.get_value(reg);
+                        let mem_addr = instr.get_op2();
+                        let mem_addr_value = self.cache.get_data_at(mem_addr);
+                        self.registers.set_value(reg, reg_value + mem_addr_value);
+                    }
+                    _ => panic!("unknown Id::Add type!"),
                 }
             }
             zion::instruction::Id::Stp => {
