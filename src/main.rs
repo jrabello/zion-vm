@@ -2,23 +2,8 @@ mod zion;
 use std::fs::File;
 use std::io::prelude::*;
 
-//#[derive(Debug)]
-// #[repr(u8)]
-// enum Instr {
-//     mov = 0,
-//     add,
-// }
-
 #[macro_use] extern crate enum_primitive_derive;
 extern crate num_traits;
-use num_traits::FromPrimitive;
-
-//#[repr(u8)]
-#[derive(Primitive)]
-enum Thing {
-    Foo = 0,
-    Bar = 1,
-}
 
 fn main() {
     //mov a, 0x10
