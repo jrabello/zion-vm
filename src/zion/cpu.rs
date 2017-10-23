@@ -72,7 +72,10 @@ impl Cpu {
     }
 
     fn execute(&mut self, instr: Instruction) {
-        //execute instruction
+        // execute instruction
+        // TODO: matching the id is done here again, let's just consider 
+        // implementing a polymorphic instruction(struct) or do some kind of pre-calc
+        // table dispatcher
         match instr.get_id() {
             zion::instruction::Id::In => {
                 match instr.get_type() {
@@ -101,10 +104,15 @@ impl Cpu {
                 }
             }
             zion::instruction::Id::Mov => {
-                println!("mov :{:?} {} {}", instr.get_type(), instr.get_op1(), instr.get_op2());
+                println!(
+                    "mov :{:?} {} {}",
+                    instr.get_type(),
+                    instr.get_op1(),
+                    instr.get_op2()
+                );
                 match instr.get_type() {
                     zion::instruction::Type::R_R => {
-                        //move register to register
+                        //move register, register
                         //println!("type:R_R {} {}:", instr.arg1(), instr.arg2());
                         let reg1 = instr.get_op1();
                         let reg2 = instr.get_op2();
@@ -112,18 +120,21 @@ impl Cpu {
                         self.registers.set_value(reg1, reg_value);
                     }
                     zion::instruction::Type::R_IMM => {
-                        //move IMM value to register
+                        //move register, IMM
                         println!("type:R_IMM {} {}:", instr.get_op1(), instr.get_op2());
                         let reg1 = instr.get_op1();
                         let imm = instr.get_op2();
                         self.registers.set_value(reg1, imm);
                     }
                     zion::instruction::Type::R_MEM => {
-                        //move data from cache(data) to register
+                        //move cache(data), register
                         //println!("type:R_MEM {} {}:", instr.arg1(), instr.arg2());
                         let reg1 = instr.get_op1();
                         let mem_addr = instr.get_op2();
-                        self.registers.set_value(reg1, self.cache.get_data_at(mem_addr));
+                        self.registers.set_value(
+                            reg1,
+                            self.cache.get_data_at(mem_addr),
+                        );
                     }
                     zion::instruction::Type::MEM_R => {
                         let mem_addr = instr.get_op1();
