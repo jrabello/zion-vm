@@ -61,7 +61,10 @@ impl Instruction {
     }
 }
 
-//instruction id
+// instruction id
+// TODO: unfortunately the crate we use to cast enum fields to u8...
+//  requires to add numbers explicitly...
+//  try to find another crate without this limitation
 #[repr(u8)]
 #[derive(Debug, Copy, Clone, Primitive)]
 pub enum Id {
